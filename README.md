@@ -1,282 +1,132 @@
-# AI Code Reviewer
+# Smart AI Code Review System
 
-**AI-powered code reviewer with build validation for ANY codebase**
+AI-powered code review system for analyzing GitHub repositories, detecting bugs, and generating intelligent code improvement suggestions using Python and Gemini AI.
 
-## What It Does
+---
 
-1. **Reviews code hierarchically**: Directory → File → Function
-2. **Makes fixes automatically**: Edits source files based on analysis  
-3. **Validates with build**: Runs your project's build command to test changes
-4. **Iterates until success**: If build fails, fixes errors and rebuilds
-5. **Commits working code**: Only commits when build succeeds
+# What It Does
 
-## Key Features
+- Scans GitHub repositories automatically
+- Reviews Python code files
+- Detects bugs using AST analysis
+- Generates AI-based code review suggestions
+- Finds bad coding practices
+- Generates code quality reports
+- Performs basic security analysis
 
-- ✅ **Generic**: Works with any language/build system
-- ✅ **Scalable**: Function-by-function chunking handles files of any size
-- ✅ **Safe**: Tests every change with your build system
-- ✅ **Autonomous**: Runs for hours reviewing entire directories
-- ✅ **Smart**: Works with any OpenAI-compatible LLM provider (vLLM, TokenHub, OpenAI, etc.)
-- ✅ **Parallel**: Optional concurrent file processing for faster reviews
-- ✅ **Self-Healing**: Auto-detects loops, learns from build failures
-- ✅ **Configurable**: Multiple agent personalities via Oracle Agent Spec
+---
 
-## Works With
+# Key Features
 
-| Language/Project | Build Command | Example |
-|------------------|---------------|---------|
-| C/C++ (Make) | `make -j$(nproc)` | Linux kernel |
-| C/C++ (CMake) | `cmake --build build -j$(nproc)` | LLVM, Qt |
-| FreeBSD | `sudo make -j$(sysctl -n hw.ncpu) buildworld` | FreeBSD source |
-| Rust | `cargo build --release` | Rustc, ripgrep |
-| Go | `go build ./...` | Kubernetes, Docker |
-| Python | `python -m pytest` | Django, Flask |
-| Node.js | `npm test` | React, Vue |
+✅ GitHub Repository Scanner  
+✅ AI-Based Code Review  
+✅ Python AST Bug Detection  
+✅ Intelligent Optimization Suggestions  
+✅ Security Vulnerability Detection  
+✅ Code Quality Analysis  
+✅ Automatic Report Generation  
+✅ Simple and User-Friendly Workflow  
 
-**Any project with a build/test command works!**
+---
 
-## Quick Start
+# Technologies Used
 
-### 1. Install Dependencies
+- Python
+- Flask / FastAPI
+- AST
+- Gemini API
+- HTML
+- CSS
+
+---
+
+# How It Works
+
+```text
+GitHub Repository URL
+          ↓
+Clone Repository
+          ↓
+Read Python Files
+          ↓
+AST Bug Analysis
+          ↓
+AI Code Review
+          ↓
+Generate Report
+```
+
+---
+
+# Project Structure
+
+```text
+smart-ai-code-review-system/
+│
+├── analyzer/
+│   ├── ast_analyzer.py
+│   ├── bug_detector.py
+│
+├── ai_review/
+│   ├── gemini_review.py
+│
+├── reports/
+│
+├── templates/
+│
+├── static/
+│
+├── app.py
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# Installation
+
+## Clone Repository
 
 ```bash
-make check-deps
+git clone https://github.com/divyasreebestha06/smart-ai-code-review-system.git
 ```
 
-### 2. Start an LLM Provider
-
-You need at least one running OpenAI-compatible LLM server.  Any of these work:
-
-| Provider | Example URL | Notes |
-|----------|-------------|-------|
-| **vLLM** | `http://localhost:8000` | GPU inference, no key needed |
-| **TokenHub** | `http://localhost:8090` | Multi-provider router, optional key |
-| **OpenAI** | `https://api.openai.com` | Requires API key |
-| **Ollama** (OpenAI mode) | `http://localhost:11434` | Local models |
-| **llama.cpp server** | `http://localhost:8080` | CPU/GPU inference |
-
-If you use TokenHub, there's a convenience launcher: `make tokenhub-start`
-
-### 3. Configure
+## Move Into Project Folder
 
 ```bash
-make config-init
+cd smart-ai-code-review-system
 ```
 
-Or manually:
-```bash
-cp config.yaml.sample config.yaml
-vim config.yaml
-```
-
-**Minimal config.yaml:**
-```yaml
-llm:
-  providers:
-    - url: "http://localhost:8000"          # local vLLM — tried first
-    - url: "http://my-server:8090"
-      api_key: "my-api-key"                # failover with auth
-    - url: "https://api.openai.com"
-      api_key: "sk-..."                    # cloud fallback
-
-source:
-  root: ".."
-  build_command: "make -j$(nproc)"  # YOUR build command
-  build_timeout: 600
-
-review:
-  persona: "personas/freebsd-angry-ai"  # Choose your agent
-```
-
-### 4. Run
+## Install Requirements
 
 ```bash
-make run
+pip install -r requirements.txt
 ```
 
-## Agents (Oracle Agent Spec)
-
-Agents define the AI's review personality and focus. Each agent is configured in [Oracle Agent Spec](https://oracle.github.io/agent-spec/26.1.0/) format.
-
-### Available Agents
-
-| Agent | Focus | Best For |
-|-------|-------|----------|
-| **freebsd-angry-ai** | Security, style(9), POSIX | Production audits (default) |
-| **security-hawk** | Vulnerabilities, exploits | Security-critical code |
-| **performance-cop** | Speed, algorithms, cache | Performance optimization |
-| **friendly-mentor** | Learning, best practices | Training, onboarding |
-| **example** | Balanced, educational | General code review |
-
-### Agent Configuration
-
-Each agent is defined in `personas/<name>/agent.yaml`:
-
-```yaml
-component_type: Agent
-agentspec_version: "26.1.0"
-name: "Security Hawk"
-description: "Paranoid security auditor"
-
-inputs:
-  - title: "codebase_path"
-    type: "string"
-
-outputs:
-  - title: "review_summary"
-    type: "string"
-  - title: "critical_vulnerabilities"
-    type: "integer"
-
-system_prompt: |
-  You are a paranoid security auditor...
-  
-llm_config:
-  component_type: OpenAiCompatibleConfig
-  name: "{{llm_name}}"
-  url: "{{llm_url}}"
-  model_id: "{{model_id}}"
-```
-
-### Creating Custom Agents
+## Run Project
 
 ```bash
-# Copy an existing agent
-cp -r personas/example personas/my-agent
-
-# Edit the agent configuration
-vim personas/my-agent/agent.yaml
-
-# Validate
-python3 persona_validator.py personas/my-agent
-
-# Use in config.yaml
-review:
-  persona: "personas/my-agent"
+python app.py
 ```
 
-## How It Works
+---
 
-### Hierarchical Review
+# Future Improvements
 
-```
-Source Tree (entire codebase)
-  └─ Directory (e.g., src/network/)  ← BUILD + COMMIT HERE
-      └─ File (e.g., tcp.c)
-          └─ Chunks (individual functions)
-```
+- Pull Request Auto Review
+- Multi-Language Support
+- Dashboard Visualization
+- Real-Time Notifications
+- CI/CD Integration
 
-### Workflow
+---
 
-1. **SET_SCOPE** - Select directory to review
-2. **READ_FILE** - Review files (chunked if large)
-3. **EDIT_FILE** - Fix issues found
-4. **BUILD** - Validate changes with your build command
-5. **Iterate** - If build fails, fix and rebuild
-6. **Commit** - When build succeeds, commit changes
-7. **Next** - Move to next directory
+# Author
 
-### Large File Handling
+Divya Sree Bestha
 
-Files over 400 lines are automatically chunked by function:
-- Reviews one function at a time
-- No timeouts or memory issues
-- Handles files of any size
+---
 
-## Architecture
+# License
 
-```
-┌─────────────────────────────────────────────────────┐
-│ ai-code-reviewer/                                   │
-│ ├─ reviewer.py        (main loop)                  │
-│ ├─ llm_client.py     (OpenAI-compat LLM client)    │
-│ ├─ persona_validator.py (Agent Spec validation)    │
-│ ├─ personas/          (agent configurations)       │
-│ │   ├─ freebsd-angry-ai/agent.yaml                │
-│ │   ├─ security-hawk/agent.yaml                   │
-│ │   └─ ...                                        │
-│ └─ config.yaml        (your configuration)        │
-└─────────────────────────────────────────────────────┘
-          ↓ HTTP /v1/chat/completions        ↓ subprocess
-         LLM Provider(s)               (your build command)
-         ├─ vLLM, TokenHub, OpenAI
-         ├─ Ollama, llama.cpp, etc.
-         └─ Any OpenAI-compatible server
-```
-
-## Project Structure
-
-```
-ai-code-reviewer/
-├── personas/                 # Agent configurations (Agent Spec)
-│   ├── freebsd-angry-ai/
-│   │   ├── agent.yaml       # Agent Spec configuration
-│   │   └── README.md        # Agent documentation
-│   ├── security-hawk/
-│   ├── performance-cop/
-│   ├── friendly-mentor/
-│   └── example/
-├── reviewer.py              # Main review loop
-├── persona_validator.py     # Agent Spec validator
-├── llm_client.py           # OpenAI-compatible LLM client (multi-provider)
-├── build_executor.py       # Build system integration
-├── chunker.py              # Large file handling
-├── config.yaml.sample    # Configuration template
-├── AGENTS.md               # AI agent instructions
-└── docs/                   # Additional documentation
-```
-
-## Configuration Examples
-
-### Linux Kernel
-```yaml
-source:
-  root: "/usr/src/linux"
-  build_command: "make -j$(nproc) bzImage modules"
-  build_timeout: 1800
-```
-
-### Rust Project
-```yaml
-source:
-  root: "/home/user/my-rust-project"
-  build_command: "cargo build --release && cargo test"
-  build_timeout: 300
-```
-
-### Python Project
-```yaml
-source:
-  root: "/home/user/my-python-project"
-  build_command: "python -m pytest tests/"
-  build_timeout: 120
-```
-
-## Make Targets
-
-| Target | Description |
-|--------|-------------|
-| `make help` | Show all targets |
-| `make check-deps` | Install dependencies |
-| `make config-init` | Interactive setup |
-| `make validate` | Validate LLM connection |
-| `make run` | Run code review |
-| `make run-verbose` | Run with verbose logging |
-| `make test` | Run tests |
-
-## Requirements
-
-- **Python 3.8+** with PyYAML
-- **At least one OpenAI-compatible LLM provider** (vLLM, TokenHub, OpenAI, Ollama, etc.)
-- **Your project's build system** (make, cmake, cargo, etc.)
-- **Git repository** (for tracking changes)
-
-## Documentation
-
-- [SETUP_GUIDE.md](SETUP_GUIDE.md) - Detailed installation guide
-- [AGENTS.md](AGENTS.md) - AI agent instructions
-- [docs/](docs/) - Additional documentation
-
-## License
-
-MIT License - See [LICENSE](LICENSE)
+This project is for educational and learning purposes.
